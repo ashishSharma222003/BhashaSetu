@@ -1,0 +1,158 @@
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(120deg, #89f7fe, #66a6ff);
+}
+
+.headline {
+  background: #ffffff;
+  width: 100%;
+  padding: 20px 0;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.headline h1 {
+  font-size: 32px;
+  color: #333;
+  margin: 0;
+  font-weight: bold;
+}
+
+.app-container {
+  text-align: center;
+  padding: 30px 20px;
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  margin-top: 20px;
+}
+
+h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+h2 i, h3 i {
+  color: #66a6ff;
+  margin-right: 8px;
+}
+
+.controls {
+  margin-bottom: 20px;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  background: #007bff;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+button i {
+  font-size: 18px;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.audio-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.original-audio, .response-audio {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+}
+
+.original-audio h3, .response-audio h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+audio {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.status-indicator {
+  padding: 8px;
+  margin: 10px 0;
+  color: #666;
+  font-style: italic;
+}
+
+.visualizer {
+  height: 50px;
+  background: #f0f0f0;
+  border-radius: 5px;
+  margin: 10px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.visualizer.active {
+  background: linear-gradient(90deg, #66a6ff 0%, #89f7fe 100%);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+#transcriptionContainer {
+  margin-top: 30px;
+  text-align: left;
+}
+
+#transcriptionContainer h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+#transcriptionText {
+  font-size: 16px;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  min-height: 80px;
+}
