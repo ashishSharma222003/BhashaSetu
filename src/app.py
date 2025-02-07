@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 from src.asr.speech_recognition_handler import FreeSpeechRecognition
 from src.tts.tts_handler import FreeTTS
-
+from llama_index.llms.ollama import Ollama
 
 # Load environment variables
 load_dotenv()
@@ -13,7 +13,7 @@ app = Flask(__name__)
 # Initialize components with environment variables
 asr_processor = FreeSpeechRecognition(language=os.getenv('ASR_LANGUAGE'))
 tts_processor = FreeTTS(language=os.getenv('TTS_LANGUAGE'))
-llm_processor = CustomLLM()
+llm=llm = Ollama(model=os.getenv("LLM_MODEL_NAME"), request_timeout=120.0)
 
 @app.route('/process_stream', methods=['POST'])
 def process_stream():
@@ -26,20 +26,43 @@ def process_stream():
             yield b''
             return
 
-        # Step 2: Custom LLM Processing
-        for llm_response in llm_processor.generate_response(recognized_text):
-            if llm_response:
-                # Step 3: Text-to-Speech Conversion
-                audio_stream = tts_processor.text_to_audio(llm_response)
-                if audio_stream:
-                    while True:
-                        chunk = audio_stream.read(os.getenv("AUDIO_CHUNK_SIZE"))
-                        if not chunk:
-                            break
-                        yield b'--frame\r\n'
-                        yield b'Content-Type: audio/wav\r\n\r\n'
-                        yield chunk
-                        yield b'\r\n'
+        # Step 2: Process with LLM using streaming
+        accumulated_text = ""
+        delimiter = "।"  # Hindi sentence delimiter
+        
+        for response in llm.stream_complete(recognized_text):
+            if response.delta:
+                accumulated_text += response.delta
+                
+                # Check if we have a complete sentence
+                if delimiter in accumulated_text:
+                    # Convert the complete sentence to audio and stream it
+                    audio_stream = tts_processor.text_to_audio(accumulated_text)
+                    if audio_stream:
+                        while True:
+                            chunk = audio_stream.read(int(os.getenv("AUDIO_CHUNK_SIZE", "1024")))
+                            if not chunk:
+                                break
+                            yield b'--frame\r\n'
+                            yield b'Content-Type: audio/wav\r\n\r\n'
+                            yield chunk
+                            yield b'\r\n'
+                    
+                    # Reset accumulated text
+                    accumulated_text = ""
+        
+        # Process any remaining text
+        if accumulated_text:
+            audio_stream = tts_processor.text_to_audio(accumulated_text)
+            if audio_stream:
+                while True:
+                    chunk = audio_stream.read(int(os.getenv("AUDIO_CHUNK_SIZE", "1024")))
+                    if not chunk:
+                        break
+                    yield b'--frame\r\n'
+                    yield b'Content-Type: audio/wav\r\n\r\n'
+                    yield chunk
+                    yield b'\r\n'
 
     return Response(
         stream_with_context(generate()),
