@@ -36,7 +36,7 @@ pip install -r requirements.txt
 ```
 
 4. **Setup Ollama**  
-Install [Ollama](https://ollama.ai/) and pull the model:
+Install [Ollama](https://ollama.com/) and pull the model:
 ```bash
 ollama pull llama3:3b
 ```
@@ -65,7 +65,7 @@ http://localhost:5000
 - Click microphone icon to speak
 - Receive audio response
 
-## 💂️ Project Structure
+## 🗂 Project Structure
 
 ```
 BhashaSetu/
@@ -105,8 +105,7 @@ BhashaSetu/
 - Returns: 
   ```json
   {
-    "audio_url": "/generated/audio.mp3",
-    "response_text": "हिंदी प्रतिक्रिया"
+    "audio_url": "/generated/audio.mp3"
   }
   ```
 
@@ -118,6 +117,10 @@ BhashaSetu/
   Ensure Ollama service is running:
   ```bash
   ollama serve
+  ```
+  Before running, pull the model by using the command:
+  ```bash
+  ollama pull llama3.2:3b
   ```
 - **Environment Variables**  
   Create `.env` for custom configurations:
