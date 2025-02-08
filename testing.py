@@ -10,8 +10,17 @@ import time
 # Load environment variables
 load_dotenv()
 
-llm = Ollama(model="llama3.2:3b", request_timeout=120.0, prompt_key="You must always respond in Hindi. Your character is female so use feamle oriented hindi.")
-
+llm = Ollama(
+    model="llama3.2:3b",  # Replace with the correct model name supported by Ollama
+    request_timeout=120.0,
+)
+system_prompt=(
+        "You must always respond in Hindi. Your character is female, so use female-oriented Hindi. \n"
+        "Do not use *, #, or any other special characters to create points or markdown. \n"
+        "Respond in clear and natural Hindi sentences.\n"
+        "The response should be conscise and very informative.\n"
+        "Below is the user query and keep in mind the above reasons when giving response-\n"
+    )
 recognizer = sr.Recognizer()
 
 def listen():
@@ -46,43 +55,49 @@ def speak(text):
         pygame.time.Clock().tick(10)
 
 
-
 if __name__ == "__main__":
     try:
         while True:
-            # Step 1: Listen for voice input
             query = listen()
             print(f"You said: {query}")
             
-            if query.lower() =="विराम":
+            if query.lower() == "विराम":
                 speak("ठीक है, अब मैं जा रही हूँ।")
                 break
-            if query.lower()=="could not understand audio":
-                continue 
-            # Step 2: Process with LLM
-            
+            if "could not understand audio" in query.lower():
+                continue
 
-            accumulated_text = ""  # Initialize a variable to accumulate text
-            delimiter = "।"  # The Devanagari full stop, typically used in Hindi sentences
-            timeout = 5  # Set a timeout to wait for the stream to generate text (in seconds)
-            start_time = time.time()  # Record the start time
+            # Hindi-specific settings
+            delimiter = "।"  # Hindi full stop
+            max_pause = 2    # Max pause between chunks in seconds
+            accumulated_text = ""
+            last_received_time = time.time()
 
-            for r in llm.stream_complete(query):
-                accumulated_text += r.delta  # Accumulate the streamed text
-                
-                # Check if the accumulated text contains the delimiter
-                if delimiter in accumulated_text:
-                    # Speak the accumulated text up to the delimiter and reset
-                    speak(accumulated_text)
-                    accumulated_text = ""  # Reset the accumulated text
-                    start_time = time.time()  # Reset the timeout timer
+            # Stream processing with proper sentence splitting
+            for chunk in llm.stream_complete(system_prompt+query):
+                print(chunk.delta,end="")
+                delta = chunk.delta
+                accumulated_text += delta
+                current_time = time.time()
 
-            # After the loop, check if there's any remaining text and speak it
-            if accumulated_text:
-                speak(accumulated_text)
-            # # Step 3: Speak the response
-            # speak(response.text)
-            
+                # Check for delimiter in new text
+                while delimiter in accumulated_text:
+                    split_index = accumulated_text.index(delimiter) + 1
+                    sentence, accumulated_text = accumulated_text.split(delimiter, 1)
+                    sentence = sentence.strip() + delimiter  # Add delimiter back
+                    speak(sentence)
+                    last_received_time = current_time
+
+                # Timeout check for partial sentences
+                if current_time - last_received_time > max_pause and accumulated_text:
+                    speak(accumulated_text.strip())
+                    accumulated_text = ""
+                    last_received_time = current_time
+
+            # Speak any remaining text after streaming completes
+            if accumulated_text.strip():
+                speak(accumulated_text.strip())
+
     except KeyboardInterrupt:
         speak("Program terminated")
     except Exception as e:
