@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 import os
 import speech_recognition as sr
 from gtts import gTTS
-from ollama import Client
 import io
 import pygame
 from llama_index.llms.ollama import Ollama
@@ -84,15 +83,11 @@ if __name__ == "__main__":
                 while delimiter in accumulated_text:
                     split_index = accumulated_text.index(delimiter) + 1
                     sentence, accumulated_text = accumulated_text.split(delimiter, 1)
+                    # print(sentence)
                     sentence = sentence.strip() + delimiter  # Add delimiter back
                     speak(sentence)
                     last_received_time = current_time
 
-                # Timeout check for partial sentences
-                if current_time - last_received_time > max_pause and accumulated_text:
-                    speak(accumulated_text.strip())
-                    accumulated_text = ""
-                    last_received_time = current_time
 
             # Speak any remaining text after streaming completes
             if accumulated_text.strip():
